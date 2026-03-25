@@ -7,13 +7,13 @@ when:
 
 steps:
   - name: build
-    image: docker.io/library/node:24
+    image: docker.io/library/node:lts
     commands:
       - npm ci
       - npm run build:prod
 
   - name: package
-    image: docker.io/library/node:24
+    image: docker.io/library/node:lts
     commands:
       - npm run vscode:prepublish
       - npx vsce package --no-dependency-updates --no-git-tag-version
@@ -47,7 +47,7 @@ steps:
       - event: [tag]
 
   - name: publish-marketplace
-    image: docker.io/library/node:24
+    image: docker.io/library/node:lts
     environment:
       MARKETPLACE_TOKEN:
         from_secret: marketplace_token

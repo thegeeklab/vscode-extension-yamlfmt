@@ -7,7 +7,7 @@ when:
 
 steps:
   - name: test
-    image: docker.io/library/node:24
+    image: docker.io/library/node:lts
     commands:
       - npm ci
       - npm test

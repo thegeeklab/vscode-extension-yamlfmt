@@ -19,21 +19,21 @@ steps:
       - cspell-cli lint . --gitignore --color
 
   - name: check-format
-    image: docker.io/library/node:24
+    image: docker.io/library/node:lts
     depends_on: []
     commands:
       - npm ci
       - npm run format:check
 
   - name: check-types
-    image: docker.io/library/node:24
+    image: docker.io/library/node:lts
     depends_on: []
     commands:
       - npm ci
       - npm run check-types
 
   - name: lint
-    image: docker.io/library/node:24
+    image: docker.io/library/node:lts
     depends_on: []
     commands:
       - npm ci
