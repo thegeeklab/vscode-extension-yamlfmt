@@ -16,7 +16,7 @@ steps:
     image: ghcr.io/streetsidesoftware/cspell
     depends_on: []
     commands:
-      - cspell lint . --gitignore --color
+      - cspell-cli lint . --gitignore --color
 
   - name: check-format
     image: docker.io/library/node:24

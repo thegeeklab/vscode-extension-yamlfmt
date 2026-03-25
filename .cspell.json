@@ -1,0 +1,29 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaries": ["en_us", "softwareTerms", "companies", "bash", "html", "css", "typescript"],
+  "words": [
+    "yamlfmt",
+    "yamlformatted",
+    "dockercompose",
+    "testdata",
+    "Kaussow",
+    "Nico",
+    "xoxys",
+    "bluebrown"
+  ],
+  "ignorePaths": [
+    ".woodpecker",
+    ".cspell.json",
+    ".git/**/*",
+    ".gitignore",
+    ".golangci.yaml",
+    ".golangci.yml",
+    ".vscode",
+    ".npmrc",
+    "renovate.json",
+    "dist",
+    "out"
+  ],
+  "ignoreRegExpList": ["&\\S+;", "{{.+}}"]
+}
