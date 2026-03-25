@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "out",
+    "sourceMap": true,
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+
+    /* Project Setup & Build Options */
+    "allowJs": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "eslint.config.mjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "out",
+    "dist"
+  ]
+}

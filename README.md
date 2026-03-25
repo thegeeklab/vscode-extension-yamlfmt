@@ -4,7 +4,7 @@ This extension calls the external binary [yamlfmt][1].
 
 ## Usage
 
-> **Note** The binary must exist in the system path. See the [official install
+> **Note** The binary must exist in the system path or be configured via `yamlfmt.path`. See the [official install
 > instructions][2].
 
 ### Configuration
@@ -23,6 +23,7 @@ You can pass [extra flags][5] from the `settings.json`:
 
 ```json
 {
+  "yamlfmt.path": "yamlfmt",
   "yamlfmt.args": []
 }
 ```

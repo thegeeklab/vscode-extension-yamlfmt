@@ -12,7 +12,12 @@
     "url": "https://github.com/bluebrown/vscode-extension-yamlfmt"
   },
   "engines": {
-    "vscode": "^1.97.2"
+    "vscode": "^1.110.0",
+    "node": ">=22"
+  },
+  "volta": {
+    "node": "24.14.1",
+    "npm": "11.12.0"
   },
   "publisher": "bluebrown",
   "pricing": "Free",
@@ -20,8 +25,11 @@
     "Formatters"
   ],
   "keywords": [
-    "multi-root ready"
+    "multi-root ready",
+    "yaml",
+    "formatter"
   ],
+  "type": "module",
   "activationEvents": [
     "onLanguage:yaml",
     "onLanguage:github-actions-workflow",
@@ -29,11 +37,17 @@
     "onLanguage:ansible",
     "onLanguage:azure-pipelines"
   ],
-  "main": "./extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
       "title": "yamlfmt",
       "properties": {
+        "yamlfmt.path": {
+          "scope": "resource",
+          "description": "Path to the yamlfmt executable. If not set, the extension will look for it in the system PATH.",
+          "type": "string",
+          "default": "yamlfmt"
+        },
         "yamlfmt.args": {
           "scope": "resource",
           "description": "Command line arguments, passed to yamlfmt",
@@ -47,24 +61,42 @@
     }
   },
   "scripts": {
-    "lint": "eslint --max-warnings 0 .",
-    "pretest": "npm run lint",
-    "test": "node ./test/runTest.js",
-    "package": "node_modules/.bin/vsce package",
-    "publish": "node_modules/.bin/vsce publish",
+    "check-types": "tsc --noEmit",
+    "check-types:watch": "tsc --noEmit --watch",
+    "build": "npm run check-types && node esbuild.js",
+    "build:watch": "node esbuild.js --watch",
+    "build:prod": "npm run check-types && node esbuild.js --production",
+    "build:test": "tsc -p ./",
+    "build:test:watch": "tsc -p ./ --watch",
+    "build:all": "run-p build build:test",
+    "build:all:watch": "run-p check-types:watch build:watch build:test:watch",
+    "vscode:prepublish": "npm run build:prod",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "spell": "cspell \"**\"",
+    "pretest": "npm run build:all",
+    "test": "node ./out/test/runTest.js",
     "convco": "docker run -u \"$(id -u):$(id -g)\"  -v \"$PWD:/tmp\" --workdir /tmp --rm convco/convco",
     "release": "bash ./hack/release.sh"
   },
   "devDependencies": {
-    "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^20.17.22",
-    "@types/vscode": "^1.97.0",
-    "@vscode/test-electron": "^2.4.1",
-    "@vscode/vsce": "^3.2.2",
-    "eslint": "^9.21.0",
-    "globals": "^16.0.0",
-    "mocha": "^11.1.0",
-    "typescript": "^5.8.2"
+    "@eslint/js": "10.0.1",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "1.110.0",
+    "@typescript-eslint/eslint-plugin": "8.57.2",
+    "@typescript-eslint/parser": "8.57.2",
+    "@vscode/test-electron": "2.5.2",
+    "@vscode/vsce": "3.7.1",
+    "cspell": "8.6.0",
+    "esbuild": "0.27.4",
+    "eslint": "10.1.0",
+    "mocha": "11.7.5",
+    "npm-run-all2": "6.1.2",
+    "prettier": "3.2.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.57.2"
   }
 }

@@ -1,35 +1,32 @@
-import globals from "globals";
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-export default [{
-    ignores: [".vscode-test/**"],
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+export default [
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    ignores: ["out/**", "dist/**", "node_modules/**", ".vscode-test/**"],
+  },
+  {
+    files: ["src/**/*.ts"],
     languageOptions: {
-        globals: {
-            ...Object.fromEntries(Object.entries(globals.browser).map(([key]) => [key, "off"])),
-            ...globals.commonjs,
-            ...globals.node,
-            ...globals.mocha,
-        },
-
-        ecmaVersion: 2018,
-        sourceType: "module",
-
-        parserOptions: {
-            ecmaFeatures: {
-                jsx: true,
-            },
-        },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: __dirname,
+      },
     },
-
     rules: {
-        "no-const-assign": "warn",
-        "no-this-before-super": "warn",
-        "no-undef": "warn",
-        "no-unreachable": "warn",
-        "no-unused-vars": "warn",
-        "constructor-super": "warn",
-        "valid-typeof": "warn",
-        semi: "warn",
-        quotes: ["warn", "double"],
+      // VS Code extension standard rule adjustments
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
     },
-}];
+  },
+];
