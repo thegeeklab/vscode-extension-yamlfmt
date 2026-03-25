@@ -1,7 +1,7 @@
-import esbuild from "esbuild";
+import esbuild from "esbuild"
 
-const production = process.argv.includes("--production");
-const watch = process.argv.includes("--watch");
+const production = process.argv.includes("--production")
+const watch = process.argv.includes("--watch")
 
 /**
  * @type {import('esbuild').Plugin}
@@ -10,20 +10,17 @@ const esbuildProblemMatcherPlugin = {
   name: "esbuild-problem-matcher",
   setup(build) {
     build.onStart(() => {
-      console.log("[watch] build started");
-    });
+      console.log("[watch] build started")
+    })
     build.onEnd((result) => {
       result.errors.forEach(({ text, location }) => {
-        console.error(`✘ [ERROR] ${text}`);
-        if (location)
-          console.error(
-            `    ${location.file}:${location.line}:${location.column}:`,
-          );
-      });
-      console.log("[watch] build finished");
-    });
-  },
-};
+        console.error(`✘ [ERROR] ${text}`)
+        if (location) console.error(`    ${location.file}:${location.line}:${location.column}:`)
+      })
+      console.log("[watch] build finished")
+    })
+  }
+}
 
 async function main() {
   const ctx = await esbuild.context({
@@ -39,19 +36,19 @@ async function main() {
     logLevel: "silent",
     plugins: [esbuildProblemMatcherPlugin],
     banner: {
-      js: 'import { createRequire } from "node:module";\nconst require = createRequire(import.meta.url);',
-    },
-  });
+      js: 'import { createRequire } from "node:module";\nconst require = createRequire(import.meta.url);'
+    }
+  })
 
   if (watch) {
-    await ctx.watch();
+    await ctx.watch()
   } else {
-    await ctx.rebuild();
-    await ctx.dispose();
+    await ctx.rebuild()
+    await ctx.dispose()
   }
 }
 
 main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+  console.error(e)
+  process.exit(1)
+})
