@@ -1,0 +1,61 @@
+---
+when:
+  - event: [pull_request, tag]
+  - event: [push, manual]
+    branch:
+      - ${CI_REPO_DEFAULT_BRANCH}
+
+steps:
+  - name: build
+    image: docker.io/library/node:24
+    commands:
+      - npm ci
+      - npm run build:prod
+
+  - name: package
+    image: docker.io/library/node:24
+    commands:
+      - npm run vscode:prepublish
+      - npx vsce package --no-dependency-updates --no-git-tag-version
+
+  - name: checksum
+    image: quay.io/thegeeklab/alpine-tools
+    commands:
+      - cd *.vsix 2>/dev/null || cd dist/*.vsix 2>/dev/null || true
+      - sha256sum *.vsix 2>/dev/null || sha256sum ./*.vsix 2>/dev/null || ls -la
+      - cd .. && sha256sum *.vsix 2>/dev/null || sha256sum ./*.vsix 2>/dev/null || true
+
+  - name: changelog
+    image: quay.io/thegeeklab/git-sv
+    commands:
+      - git sv current-version
+      - git sv release-notes -t ${CI_COMMIT_TAG:-next} -o CHANGELOG.md
+      - cat CHANGELOG.md
+
+  - name: publish-github
+    image: docker.io/plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      files:
+        - "*.vsix"
+        - sha256sum.txt
+      note: CHANGELOG.md
+      overwrite: true
+      title: ${CI_COMMIT_TAG}
+    when:
+      - event: [tag]
+
+  - name: publish-marketplace
+    image: docker.io/library/node:24
+    environment:
+      MARKETPLACE_TOKEN:
+        from_secret: marketplace_token
+    commands:
+      - npx vsce publish --no-dependency-updates --no-git-tag-version -p ${MARKETPLACE_TOKEN}
+    when:
+      - event: [tag]
+
+depends_on:
+  - static
+  - test

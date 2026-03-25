@@ -3,14 +3,16 @@
   "displayName": "yamlfmt",
   "description": "Format yaml files with https://github.com/google/yamlfmt",
   "version": "0.1.6",
-  "author": {
-    "name": "Nico Braun",
-    "email": "rainbowstack@gmail.com",
-    "url": "https://bluebrown.github.io"
-  },
+  "author": "Robert Kaussow <mail@thegeeklab.de> (https://github.com/xoxys)",
   "repository": {
-    "url": "https://github.com/bluebrown/vscode-extension-yamlfmt"
+    "type": "git",
+    "url": "https://github.com/thegeeklab/vscode-extension-yamlfmt.git"
   },
+  "bugs": {
+    "url": "https://github.com/thegeeklab/vscode-extension-yamlfmt/issues"
+  },
+  "homepage": "https://github.com/thegeeklab/vscode-extension-yamlfmt#readme",
+  "private": true,
   "engines": {
     "vscode": "^1.110.0",
     "node": ">=22"
@@ -19,8 +21,21 @@
     "node": "24.14.1",
     "npm": "11.12.0"
   },
-  "publisher": "bluebrown",
+  "publisher": "xoxys",
   "pricing": "Free",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Only the user defined `yamlfmt` executable will be taken into account when running in untrusted mode.",
+      "restrictedConfigurations": [
+        "yamlfmt.path"
+      ]
+    },
+    "virtualWorkspaces": {
+      "supported": "limited",
+      "description": "Virtual Workspaces are not supported due to dependency on a local `yamlfmt` binary."
+    }
+  },
   "categories": [
     "Formatters"
   ],
@@ -77,9 +92,7 @@
     "format:check": "prettier --check .",
     "spell": "cspell \"**\"",
     "pretest": "npm run build:all",
-    "test": "node ./out/test/runTest.js",
-    "convco": "docker run -u \"$(id -u):$(id -g)\"  -v \"$PWD:/tmp\" --workdir /tmp --rm convco/convco",
-    "release": "bash ./hack/release.sh"
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -1,0 +1,13 @@
+---
+when:
+  - event: [pull_request, tag]
+  - event: [push, manual]
+    branch:
+      - ${CI_REPO_DEFAULT_BRANCH}
+
+steps:
+  - name: test
+    image: docker.io/library/node:24
+    commands:
+      - npm ci
+      - npm test

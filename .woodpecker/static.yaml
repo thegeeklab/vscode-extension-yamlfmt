@@ -1,0 +1,49 @@
+---
+when:
+  - event: [pull_request, tag]
+  - event: [push, manual]
+    branch:
+      - ${CI_REPO_DEFAULT_BRANCH}
+
+steps:
+  - name: markdownlint
+    image: quay.io/thegeeklab/markdownlint-cli
+    depends_on: []
+    commands:
+      - markdownlint 'README.md' 'CONTRIBUTING.md'
+
+  - name: spellcheck
+    image: ghcr.io/streetsidesoftware/cspell
+    depends_on: []
+    commands:
+      - cspell lint . --gitignore --color
+
+  - name: check-format
+    image: docker.io/library/node:24
+    depends_on: []
+    commands:
+      - npm ci
+      - npm run format:check
+
+  - name: check-types
+    image: docker.io/library/node:24
+    depends_on: []
+    commands:
+      - npm ci
+      - npm run check-types
+
+  - name: lint
+    image: docker.io/library/node:24
+    depends_on: []
+    commands:
+      - npm ci
+      - npm run lint
+
+  - name: link-validation
+    image: docker.io/lycheeverse/lychee:0.23
+    depends_on: []
+    commands:
+      - lychee --no-progress --format detailed README.md
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token_ro
