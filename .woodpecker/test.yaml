@@ -10,6 +10,11 @@ steps:
     image: docker.io/library/node:lts
     commands:
       - apt-get update > /dev/null 2>&1 && apt-get install -yq libnss3 libnspr4 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libpango-1.0-0 libcairo2 libpangocairo-1.0-0 libxshmfence1 xvfb wget jq > /dev/null 2>&1
-      - LATEST=$(curl -s https://api.github.com/repos/google/yamlfmt/releases/latest | jq -r '.tag_name') && LATEST=${LATEST#v} && wget -q "https://github.com/google/yamlfmt/releases/download/v${LATEST}/yamlfmt_${LATEST}_linux_amd64" -O /usr/local/bin/yamlfmt && chmod +x /usr/local/bin/yamlfmt
+      - echo "Checking GitHub API response:"
+      - curl -s https://api.github.com/repos/google/yamlfmt/releases/latest | head -c 200
+      - echo ""
+      - LATEST=$(curl -s https://api.github.com/repos/google/yamlfmt/releases/latest | jq -r '.tag_name')
+      - echo "LATEST=$LATEST"
+      - test -n "$LATEST" && (LATEST=${LATEST#v} && wget -q "https://github.com/google/yamlfmt/releases/download/v${LATEST}/yamlfmt_${LATEST}_linux_amd64" -O /usr/local/bin/yamlfmt && chmod +x /usr/local/bin/yamlfmt) || echo "LATEST is empty, skipping yamlfmt download"
       - npm ci
       - xvfb-run --auto-servernum npm test
