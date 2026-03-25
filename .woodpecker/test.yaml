@@ -9,6 +9,8 @@ steps:
   - name: test
     image: docker.io/library/node:lts
     commands:
-      - apt-get update && apt-get install -y libnss3 libnspr4 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libpango-1.0-0 libcairo2 libpangocairo-1.0-0 libxshmfence1 xvfb
+      - apt-get update && apt-get install -y libnss3 libnspr4 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libpango-1.0-0 libcairo2 libpangocairo-1.0-0 libxshmfence1 xvfb go
+      - go install github.com/google/yamlfmt/cmd/yamlfmt@latest
+      - export PATH="$PATH:$HOME/go/bin"
       - npm ci
       - xvfb-run --auto-servernum npm test
