@@ -1,5 +1,3 @@
 {
-  "yamlfmt.args": [
-    "-conf=hack/yamlfmt.yaml"
-  ]
+  "yamlfmt.args": ["-conf=hack/yamlfmt.yaml"]
 }

@@ -9,7 +9,9 @@ steps:
   - name: test
     image: docker.io/library/node:lts
     commands:
-      - apt-get update > /dev/null 2>&1 && apt-get install -yq libnss3 libnspr4 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libpango-1.0-0 libcairo2 libpangocairo-1.0-0 libxshmfence1 xvfb wget jq > /dev/null 2>&1
-      - wget -q https://github.com/google/yamlfmt/releases/download/v0.13.0/yamlfmt_0.13.0_linux_amd64 -O /usr/local/bin/yamlfmt && chmod +x /usr/local/bin/yamlfmt
+      - apt-get update > /dev/null 2>&1 && apt-get install -yq dbus dbus-x11 libasound2 libgbm1 libgtk-3-0 libnss3 xvfb wget jq > /dev/null 2>&1
+      - eval $$(dbus-launch --sh-syntax)
+      - export DBUS_SYSTEM_BUS_ADDRESS=$$DBUS_SESSION_BUS_ADDRESS
+      - wget -q https://github.com/google/yamlfmt/releases/download/v0.21.0/yamlfmt_0.21.0_Linux_x86_64.tar.gz -O /tmp/yamlfmt.tar.gz && tar -xzf /tmp/yamlfmt.tar.gz -C /tmp && mv /tmp/yamlfmt /usr/local/bin/ && chmod +x /usr/local/bin/yamlfmt
       - npm ci
-      - xvfb-run --auto-servernum npm test
+      - xvfb-run -a npm run test

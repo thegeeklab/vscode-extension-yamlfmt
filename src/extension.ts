@@ -13,8 +13,6 @@ const yamlformattedLanguages = [
 class YamlFmtProvider
   implements vscode.DocumentFormattingEditProvider, vscode.DocumentRangeFormattingEditProvider
 {
-  // No logger needed - using vscode.window.showErrorMessage for errors
-
   async provideDocumentFormattingEdits(
     document: vscode.TextDocument,
     _options: vscode.FormattingOptions,
@@ -80,15 +78,18 @@ class YamlFmtProvider
   ): Promise<string> {
     // Create a promise that can be rejected by cancellation
     const processPromise = new Promise<string>((resolve, reject) => {
-      const process = spawn(yamlfmtPath, args, { cwd })
+      const proc = spawn(yamlfmtPath, args, { cwd })
 
       let stdout = ""
       let stderr = ""
 
-      process.stdout.on("data", (data) => (stdout += data.toString()))
-      process.stderr.on("data", (data) => (stderr += data.toString()))
+      // Prevent EPIPE errors when the process exits before stdin is fully written
+      proc.stdin.on("error", () => {})
 
-      process.on("error", (err) => {
+      proc.stdout.on("data", (data) => (stdout += data.toString()))
+      proc.stderr.on("data", (data) => (stderr += data.toString()))
+
+      proc.on("error", (err) => {
         // Handle common errors gracefully (e.g., yamlfmt not installed)
         const nodeErr = err as NodeJS.ErrnoException
         if (nodeErr.code === "ENOENT") {
@@ -102,7 +103,7 @@ class YamlFmtProvider
         }
       })
 
-      process.on("close", (code) => {
+      proc.on("close", (code) => {
         if (code !== 0) {
           reject(new Error(stderr.trim() || `Process exited with code ${code}`))
         } else {
@@ -110,13 +111,15 @@ class YamlFmtProvider
         }
       })
 
-      // Write the document text to stdin
-      process.stdin.write(input)
-      process.stdin.end()
+      // Write the document text to stdin once the process has spawned
+      proc.on("spawn", () => {
+        proc.stdin.write(input)
+        proc.stdin.end()
+      })
 
       // Gracefully handle the user cancelling the format (e.g., closing the file before it finishes)
       token.onCancellationRequested(() => {
-        process.kill()
+        proc.kill()
         reject(new Error("Formatting cancelled"))
       })
     })

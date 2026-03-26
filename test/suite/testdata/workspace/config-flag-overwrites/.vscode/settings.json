@@ -1,5 +1,3 @@
 {
-  "yamlfmt.args": [
-    "-formatter=include_document_start=false,indent=4"
-  ]
+  "yamlfmt.args": ["-formatter=include_document_start=false,indent=4"]
 }

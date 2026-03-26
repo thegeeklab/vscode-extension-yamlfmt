@@ -1,19 +1,29 @@
-import * as path from "node:path"
-import * as os from "node:os"
 import { runTests } from "@vscode/test-electron"
+import { rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join, resolve } from "node:path"
 
 async function main() {
   try {
-    const extensionDevelopmentPath = path.resolve(import.meta.dirname, "../../")
-    const extensionTestsPath = path.resolve(import.meta.dirname, "./suite/index.js")
+    const extensionDevelopmentPath = resolve(import.meta.dirname, "../..")
+    const extensionTestsPath = resolve(import.meta.dirname, "./index.js")
+    const userDataDir = join(tmpdir(), "yamlfmt-test")
+
+    // Clean up stale user data from previous test runs
+    rmSync(userDataDir, { recursive: true, force: true })
+
+    const version = process.env.VSCODE_TEST_VERSION ?? "stable"
 
     await runTests({
+      version,
       extensionDevelopmentPath,
       extensionTestsPath,
       launchArgs: [
+        "--new-window",
         "--disable-extensions",
+        "--disable-gpu",
         "--user-data-dir",
-        path.join(os.tmpdir(), "yamlfmt-test")
+        userDataDir
       ]
     })
   } catch (err) {
