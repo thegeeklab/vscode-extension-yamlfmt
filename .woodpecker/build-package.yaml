@@ -51,16 +51,16 @@ steps:
     when:
       - event: [tag]
 
-  - name: publish-marketplace
-    image: docker.io/library/node:lts
-    environment:
-      MARKETPLACE_TOKEN:
-        from_secret: marketplace_token
-    commands:
-      - npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
-      - npx vsce publish --no-dependencies --no-git-tag-version -p ${MARKETPLACE_TOKEN}
-    when:
-      - event: [tag]
+  # - name: publish-marketplace
+  #   image: docker.io/library/node:lts
+  #   environment:
+  #     MARKETPLACE_TOKEN:
+  #       from_secret: marketplace_token
+  #   commands:
+  #     - npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
+  #     - npx vsce publish --no-dependencies --no-git-tag-version -p ${MARKETPLACE_TOKEN}
+  #   when:
+  #     - event: [tag]
 
 depends_on:
   - static
