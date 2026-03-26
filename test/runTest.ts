@@ -23,6 +23,8 @@ async function main() {
         "--disable-extensions",
         "--disable-gpu",
         "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-crash-reporter",
         "--user-data-dir",
         userDataDir
       ]
