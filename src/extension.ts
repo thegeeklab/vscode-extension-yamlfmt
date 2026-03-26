@@ -40,7 +40,7 @@ class YamlFmtProvider
 
     const yamlfmtPath = config.get<string>("yamlfmt.path", "yamlfmt")
 
-    const args: string[] = config.get("yamlfmt.args", []).filter((arg: string) => arg !== "-in")
+    const args = config.get<string[]>("yamlfmt.args", []).filter((arg) => arg !== "-in")
     args.push("-in")
 
     const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : dirname(document.uri.fsPath)
@@ -51,7 +51,7 @@ class YamlFmtProvider
     try {
       const formattedText = await this.runYamlFmt(yamlfmtPath, args, cwd, text, token)
 
-      if (!formattedText || formattedText.length === 0) {
+      if (!formattedText) {
         return []
       }
 
@@ -80,14 +80,16 @@ class YamlFmtProvider
     const processPromise = new Promise<string>((resolve, reject) => {
       const proc = spawn(yamlfmtPath, args, { cwd })
 
-      let stdout = ""
-      let stderr = ""
+      const stdoutChunks: Buffer[] = []
+      const stderrChunks: Buffer[] = []
 
-      // Prevent EPIPE errors when the process exits before stdin is fully written
-      proc.stdin.on("error", () => {})
+      // Suppress EPIPE errors when the process exits before stdin is fully written
+      proc.stdin.on("error", () => {
+        // Intentionally empty - EPIPE errors are expected and harmless
+      })
 
-      proc.stdout.on("data", (data) => (stdout += data.toString()))
-      proc.stderr.on("data", (data) => (stderr += data.toString()))
+      proc.stdout.on("data", (data: Buffer) => stdoutChunks.push(data))
+      proc.stderr.on("data", (data: Buffer) => stderrChunks.push(data))
 
       proc.on("error", (err) => {
         // Handle common errors gracefully (e.g., yamlfmt not installed)
@@ -105,9 +107,13 @@ class YamlFmtProvider
 
       proc.on("close", (code) => {
         if (code !== 0) {
-          reject(new Error(stderr.trim() || `Process exited with code ${code}`))
+          reject(
+            new Error(
+              Buffer.concat(stderrChunks).toString().trim() || `Process exited with code ${code}`
+            )
+          )
         } else {
-          resolve(stdout)
+          resolve(Buffer.concat(stdoutChunks).toString())
         }
       })
 

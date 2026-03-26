@@ -6,6 +6,12 @@ when:
       - ${CI_REPO_DEFAULT_BRANCH}
 
 steps:
+  - name: deps
+    image: docker.io/library/node:lts
+    depends_on: []
+    commands:
+      - npm ci
+
   - name: markdownlint
     image: quay.io/thegeeklab/markdownlint-cli
     depends_on: []
@@ -18,27 +24,6 @@ steps:
     commands:
       - cspell-cli lint . --gitignore --color
 
-  - name: check-format
-    image: docker.io/library/node:lts
-    depends_on: []
-    commands:
-      - npm ci
-      - npm run format:check
-
-  - name: check-types
-    image: docker.io/library/node:lts
-    depends_on: []
-    commands:
-      - npm ci
-      - npm run check-types
-
-  - name: lint
-    image: docker.io/library/node:lts
-    depends_on: []
-    commands:
-      - npm ci
-      - npm run lint
-
   - name: link-validation
     image: docker.io/lycheeverse/lychee:0.23
     depends_on: []
@@ -47,3 +32,21 @@ steps:
     environment:
       GITHUB_TOKEN:
         from_secret: github_token_ro
+
+  - name: check-format
+    image: docker.io/library/node:lts
+    depends_on: [deps]
+    commands:
+      - npm run format:check
+
+  - name: check-types
+    image: docker.io/library/node:lts
+    depends_on: [deps]
+    commands:
+      - npm run check-types
+
+  - name: lint
+    image: docker.io/library/node:lts
+    depends_on: [deps]
+    commands:
+      - npm run lint

@@ -44,7 +44,7 @@ suite("Error handling", () => {
     )
 
     // Should not throw — either returns edits or empty array
-    assert.ok(edits !== undefined || edits === undefined)
+    assert.ok(edits === undefined || Array.isArray(edits))
   })
 
   test("should handle invalid args gracefully", async function () {

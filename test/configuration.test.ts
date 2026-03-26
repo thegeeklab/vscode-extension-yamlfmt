@@ -20,7 +20,7 @@ suite("Configuration", () => {
     const args = config.get<string[]>("args")
 
     assert.ok(Array.isArray(args))
-    assert.strictEqual(args!.length, 0)
+    assert.strictEqual(args.length, 0)
   })
 
   test("should allow setting custom path", async () => {
@@ -45,7 +45,7 @@ suite("Configuration", () => {
 
     const updatedConfig = vscode.workspace.getConfiguration("yamlfmt")
     const args = updatedConfig.get<string[]>("args")
-    assert.ok(args!.includes("-in"))
+    assert.ok(args?.includes("-in"))
   })
 
   test("should have resource scope for path", () => {
@@ -53,7 +53,7 @@ suite("Configuration", () => {
     const inspect = config.inspect<string>("path")
 
     assert.ok(inspect)
-    assert.strictEqual(inspect!.defaultValue, "yamlfmt")
+    assert.strictEqual(inspect.defaultValue, "yamlfmt")
   })
 
   test("should have resource scope for args", () => {
@@ -61,6 +61,6 @@ suite("Configuration", () => {
     const inspect = config.inspect<string[]>("args")
 
     assert.ok(inspect)
-    assert.deepStrictEqual(inspect!.defaultValue, [])
+    assert.deepStrictEqual(inspect.defaultValue, [])
   })
 })
