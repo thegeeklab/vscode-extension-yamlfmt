@@ -46,11 +46,7 @@
   ],
   "type": "module",
   "activationEvents": [
-    "onLanguage:yaml",
-    "onLanguage:github-actions-workflow",
-    "onLanguage:dockercompose",
-    "onLanguage:ansible",
-    "onLanguage:azure-pipelines"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -85,7 +81,7 @@
     "build:test:watch": "tsc -p ./ --watch",
     "build:all": "run-p build build:test",
     "build:all:watch": "run-p check-types:watch build:watch build:test:watch",
-    "vscode:prepublish": "npm run build:prod",
+    "package:local": "npm run build:prod && npx vsce package --no-dependencies --no-git-tag-version",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write .",

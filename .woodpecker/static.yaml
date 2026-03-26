@@ -18,6 +18,12 @@ steps:
     commands:
       - markdownlint 'README.md' 'CONTRIBUTING.md'
 
+  - name: yamlfmt-lint
+    image: ghcr.io/google/yamlfmt:latest
+    depends_on: []
+    commands:
+      - yamlfmt -lint .
+
   - name: spellcheck
     image: ghcr.io/streetsidesoftware/cspell
     depends_on: []
