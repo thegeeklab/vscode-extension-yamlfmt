@@ -23,6 +23,7 @@
     ".vscode",
     ".npmrc",
     "renovate.json",
+    "**/*.svg",
     "dist",
     "out"
   ],
