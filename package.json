@@ -1,5 +1,5 @@
 {
-  "name": "yamlfmt",
+  "name": "yamlfmt-ng",
   "displayName": "yamlfmt",
   "description": "Format yaml files with https://github.com/google/yamlfmt",
   "version": "0.0.0-dev",
