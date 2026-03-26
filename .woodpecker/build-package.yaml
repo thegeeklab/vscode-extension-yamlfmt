@@ -10,18 +10,13 @@ steps:
     image: docker.io/library/node:lts
     commands:
       - npm ci
-      - npm run build:prod
-
-  - name: package
-    image: docker.io/library/node:lts
-    commands:
       - |
         if [ -n "$CI_COMMIT_TAG" ]; then
           npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
         else
           npm version "0.0.0-${CI_COMMIT_SHA:0:8}" --no-git-tag-version
         fi
-      - npm run vscode:prepublish
+      - npm run build:prod
       - npx vsce package --no-dependencies --no-git-tag-version
 
   - name: checksum
@@ -51,16 +46,16 @@ steps:
     when:
       - event: [tag]
 
-  # - name: publish-marketplace
-  #   image: docker.io/library/node:lts
-  #   environment:
-  #     MARKETPLACE_TOKEN:
-  #       from_secret: marketplace_token
-  #   commands:
-  #     - npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
-  #     - npx vsce publish --no-dependencies --no-git-tag-version -p ${MARKETPLACE_TOKEN}
-  #   when:
-  #     - event: [tag]
+# - name: publish-marketplace
+#   image: docker.io/library/node:lts
+#   environment:
+#     MARKETPLACE_TOKEN:
+#       from_secret: marketplace_token
+#   commands:
+#     - npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
+#     - npx vsce publish --no-dependencies --no-git-tag-version -p ${MARKETPLACE_TOKEN}
+#   when:
+#     - event: [tag]
 
 depends_on:
   - static

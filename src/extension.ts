@@ -10,6 +10,8 @@ const yamlformattedLanguages = [
   "azure-pipelines"
 ]
 
+export let outputChannel: vscode.LogOutputChannel
+
 class YamlFmtProvider
   implements vscode.DocumentFormattingEditProvider, vscode.DocumentRangeFormattingEditProvider
 {
@@ -45,13 +47,26 @@ class YamlFmtProvider
 
     const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : dirname(document.uri.fsPath)
 
+    outputChannel.info(`Formatting document: ${document.uri.fsPath}`)
+    outputChannel.debug(`  yamlfmt path: ${yamlfmtPath}`)
+    outputChannel.debug(`  arguments: ${args.join(" ")}`)
+    outputChannel.debug(`  working directory: ${cwd}`)
+
     // Get text for the full document or just the range
     const text = range ? document.getText(range) : document.getText()
 
     try {
-      const formattedText = await this.runYamlFmt(yamlfmtPath, args, cwd, text, token)
+      const formattedText = await this.runYamlFmt(
+        yamlfmtPath,
+        args,
+        cwd,
+        text,
+        token,
+        document.uri.fsPath
+      )
 
       if (!formattedText) {
+        outputChannel.info("  No formatting changes needed")
         return []
       }
 
@@ -59,9 +74,11 @@ class YamlFmtProvider
       const editRange =
         range ?? new vscode.Range(document.positionAt(0), document.positionAt(text.length))
 
+      outputChannel.info("  Formatting completed successfully")
       return [vscode.TextEdit.replace(editRange, formattedText)]
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
+      outputChannel.error(`  Error: ${message}`)
       if (message !== "Formatting cancelled") {
         vscode.window.showErrorMessage(`yamlfmt: ${message}`)
       }
@@ -74,7 +91,8 @@ class YamlFmtProvider
     args: string[],
     cwd: string,
     input: string,
-    token: vscode.CancellationToken
+    token: vscode.CancellationToken,
+    _filePath: string
   ): Promise<string> {
     // Create a promise that can be rejected by cancellation
     const processPromise = new Promise<string>((resolve, reject) => {
@@ -134,7 +152,17 @@ class YamlFmtProvider
   }
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export interface ExtensionApi {
+  outputChannel: vscode.LogOutputChannel
+}
+
+export function activate(context: vscode.ExtensionContext): ExtensionApi {
+  outputChannel = vscode.window.createOutputChannel("yamlfmt", { log: true })
+  context.subscriptions.push(outputChannel)
+
+  outputChannel.info("yamlfmt extension activated")
+  outputChannel.info(`Supported languages: ${yamlformattedLanguages.join(", ")}`)
+
   const provider = new YamlFmtProvider()
 
   for (const lang of yamlformattedLanguages) {
@@ -146,6 +174,8 @@ export function activate(context: vscode.ExtensionContext) {
     )
     context.subscriptions.push(disposable, rangeDisposable)
   }
+
+  return { outputChannel }
 }
 
 export function deactivate() {}
