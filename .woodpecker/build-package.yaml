@@ -56,15 +56,15 @@ steps:
     when:
       - event: [tag]
 
-# - name: publish-marketplace
-#   image: docker.io/library/node:lts
-#   environment:
-#     MARKETPLACE_TOKEN:
-#       from_secret: marketplace_token
-#   commands:
-#     - npx vsce publish --no-dependencies --no-git-tag-version -p ${MARKETPLACE_TOKEN}
-#   when:
-#     - event: [tag]
+  - name: publish-marketplace
+    image: docker.io/library/node:lts
+    environment:
+      MARKETPLACE_TOKEN:
+        from_secret: marketplace_token
+    commands:
+      - npx vsce publish --no-dependencies --no-git-tag-version --packagePath *.vsix -p $${MARKETPLACE_TOKEN}
+    when:
+      - event: [tag]
 
 depends_on:
   - static

@@ -16,20 +16,20 @@
   
   <rect width="256" height="256" rx="56" fill="url(#bg)"/>
   
+  <!-- YAML Text -->
+  <text x="128" y="90" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="900" font-size="48" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">YAML</text>
+  
   <!-- YAML Indentation Lines -->
-  <rect x="56" y="72" width="48" height="16" rx="8" fill="url(#primary)" />
-  <rect x="116" y="72" width="84" height="16" rx="8" fill="#475569" />
+  <rect x="56" y="120" width="48" height="16" rx="8" fill="url(#primary)" />
+  <rect x="116" y="120" width="84" height="16" rx="8" fill="#475569" />
   
-  <rect x="88" y="108" width="40" height="16" rx="8" fill="url(#primary)" />
-  <rect x="140" y="108" width="60" height="16" rx="8" fill="#475569" />
+  <rect x="88" y="156" width="40" height="16" rx="8" fill="url(#primary)" />
+  <rect x="140" y="156" width="60" height="16" rx="8" fill="#475569" />
   
-  <rect x="88" y="144" width="56" height="16" rx="8" fill="url(#primary)" />
-  <rect x="156" y="144" width="44" height="16" rx="8" fill="#475569" />
-  
-  <rect x="56" y="180" width="64" height="16" rx="8" fill="url(#primary)" />
-  <rect x="132" y="180" width="68" height="16" rx="8" fill="#475569" />
+  <rect x="88" y="192" width="56" height="16" rx="8" fill="url(#primary)" />
+  <rect x="156" y="192" width="44" height="16" rx="8" fill="#475569" />
 
   <!-- Magic Wand / Sparkles for Formatting -->
-  <path d="M 180 50 L 184 64 L 198 68 L 184 72 L 180 86 L 176 72 L 162 68 L 176 64 Z" fill="url(#accent)" />
-  <path d="M 210 90 L 212 98 L 220 100 L 212 102 L 210 110 L 208 102 L 200 100 L 208 98 Z" fill="url(#accent)" />
+  <path d="M 200 30 L 204 44 L 218 48 L 204 52 L 200 66 L 196 52 L 182 48 L 196 44 Z" fill="url(#accent)" />
+  <path d="M 220 70 L 222 78 L 230 80 L 222 82 L 220 90 L 218 82 L 210 80 L 218 78 Z" fill="url(#accent)" />
 </svg>
