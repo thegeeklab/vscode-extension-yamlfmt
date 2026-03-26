@@ -6,6 +6,10 @@ import { pathToFileURL } from "node:url"
 // @ts-expect-error internal mocha ESM utils
 import mochaEsmUtils from "mocha/lib/nodejs/esm-utils.js"
 
+// Suppress SIGPIPE errors that can crash the renderer process in CI environments.
+// This happens when spawning processes that fail immediately (e.g., missing binary).
+process.on("SIGPIPE", () => {})
+
 // https://github.com/mochajs/mocha/issues/5599#issuecomment-3982072912
 mochaEsmUtils.requireOrImport = async (file: string) => {
   const result = (await mochaEsmUtils.doImport(pathToFileURL(file))) as Record<string, unknown>

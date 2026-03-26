@@ -79,7 +79,14 @@ suite("Document formatting", () => {
   test("should format complex nested structures", async function () {
     this.retries(2)
 
-    const input = ["services:", "    web:", "        image:   nginx", "        ports:", "            -  80:80", ""].join("\n")
+    const input = [
+      "services:",
+      "    web:",
+      "        image:   nginx",
+      "        ports:",
+      "            -  80:80",
+      ""
+    ].join("\n")
     const document = await openDocument(input, "yaml")
 
     const textChangePromise = waitForText(document)

@@ -22,6 +22,7 @@ async function main() {
         "--new-window",
         "--disable-extensions",
         "--disable-gpu",
+        "--no-sandbox",
         "--user-data-dir",
         userDataDir
       ]
