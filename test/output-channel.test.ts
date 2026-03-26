@@ -1,6 +1,6 @@
 import assert from "node:assert"
 import * as vscode from "vscode"
-import { closeAllEditors, openDocument, resetConfiguration } from "./helpers.js"
+import { closeAllEditors, EXTENSION_ID, openDocument, resetConfiguration } from "./helpers.js"
 import type { ExtensionApi } from "../src/extension.js"
 
 suite("Output channel", () => {
@@ -10,7 +10,7 @@ suite("Output channel", () => {
   })
 
   test("should create a LogOutputChannel named yamlfmt on activation", async () => {
-    const ext = vscode.extensions.getExtension<ExtensionApi>("xoxys.yamlfmt")!
+    const ext = vscode.extensions.getExtension<ExtensionApi>(EXTENSION_ID)!
     const api = await ext.activate()
 
     assert.ok(ext.isActive, "Extension should be activated")
@@ -25,7 +25,7 @@ suite("Output channel", () => {
   test("should format document with logging enabled", async function () {
     this.retries(2)
 
-    const ext = vscode.extensions.getExtension("xoxys.yamlfmt")!
+    const ext = vscode.extensions.getExtension(EXTENSION_ID)!
     await ext.activate()
 
     const document = await openDocument("name:    test\nkey:   value\n", "yaml")
@@ -48,7 +48,7 @@ suite("Output channel", () => {
   test("should log errors to output channel when yamlfmt not found", async function () {
     this.retries(2)
 
-    const ext = vscode.extensions.getExtension("xoxys.yamlfmt")!
+    const ext = vscode.extensions.getExtension(EXTENSION_ID)!
     await ext.activate()
 
     // Set an invalid yamlfmt path to trigger an error

@@ -1,6 +1,6 @@
 import assert from "node:assert"
 import * as vscode from "vscode"
-import { closeAllEditors, openDocument } from "./helpers.js"
+import { closeAllEditors, EXTENSION_ID, openDocument } from "./helpers.js"
 
 suite("Extension activation", () => {
   teardown(async () => {
@@ -8,12 +8,12 @@ suite("Extension activation", () => {
   })
 
   test("should be present", () => {
-    const ext = vscode.extensions.getExtension("xoxys.yamlfmt")
+    const ext = vscode.extensions.getExtension(EXTENSION_ID)
     assert.ok(ext, "Extension should be found by its ID")
   })
 
   test("should activate on YAML files", async () => {
-    const ext = vscode.extensions.getExtension("xoxys.yamlfmt")!
+    const ext = vscode.extensions.getExtension(EXTENSION_ID)!
     await openDocument("key: value\n", "yaml")
 
     await ext.activate()
@@ -22,7 +22,7 @@ suite("Extension activation", () => {
   })
 
   test("should activate on dockercompose files", async () => {
-    const ext = vscode.extensions.getExtension("xoxys.yamlfmt")!
+    const ext = vscode.extensions.getExtension(EXTENSION_ID)!
     await openDocument("services:\n  web:\n    image: nginx\n", "dockercompose")
 
     await ext.activate()
@@ -31,14 +31,14 @@ suite("Extension activation", () => {
   })
 
   test("should register document formatting provider", async () => {
-    const ext = vscode.extensions.getExtension("xoxys.yamlfmt")!
+    const ext = vscode.extensions.getExtension(EXTENSION_ID)!
     await ext.activate()
 
     assert.strictEqual(ext.isActive, true)
   })
 
   test("should declare all activation languages", () => {
-    const ext = vscode.extensions.getExtension("xoxys.yamlfmt")!
+    const ext = vscode.extensions.getExtension(EXTENSION_ID)!
     const activationEvents = ext.packageJSON.activationEvents as string[]
 
     const expectedLanguages = [

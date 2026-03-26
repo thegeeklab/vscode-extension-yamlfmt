@@ -1,6 +1,15 @@
 import assert from "node:assert"
-import { join } from "node:path"
+import { readFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import * as vscode from "vscode"
+
+const _filename = fileURLToPath(import.meta.url)
+const _dirname = dirname(_filename)
+const pkg = JSON.parse(readFileSync(join(_dirname, "..", "..", "package.json"), "utf-8"))
+
+/** Extension ID derived from package.json (`publisher.name`). */
+export const EXTENSION_ID: string = `${pkg.publisher}.${pkg.name}`
 
 let _documentIndex = 0
 

@@ -16,7 +16,7 @@ steps:
         else
           npm version "0.0.0-${CI_COMMIT_SHA:0:8}" --no-git-tag-version
         fi
-      - npm run build:prod
+      - npm run vscode:prepublish
       - npx vsce package --no-dependencies --no-git-tag-version
 
   - name: checksum
@@ -43,6 +43,17 @@ steps:
       note: CHANGELOG.md
       overwrite: true
       title: ${CI_COMMIT_TAG}
+    when:
+      - event: [tag]
+
+  - name: publish-ovsx
+    image: docker.io/library/node:lts
+    environment:
+      OVSX_TOKEN:
+        from_secret: ovsx_token
+    commands:
+      - npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
+      - npx ovsx publish --no-dependencies -p ${OVSX_TOKEN} *.vsix
     when:
       - event: [tag]
 
