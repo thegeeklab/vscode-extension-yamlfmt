@@ -15,15 +15,19 @@ steps:
   - name: package
     image: docker.io/library/node:lts
     commands:
+      - npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
       - npm run vscode:prepublish
-      - npx vsce package --no-dependency-updates --no-git-tag-version
+      - npx vsce package --no-dependencies --no-git-tag-version
+    when:
+      - event: [tag]
 
   - name: checksum
     image: quay.io/thegeeklab/alpine-tools
     commands:
-      - cd *.vsix 2>/dev/null || cd dist/*.vsix 2>/dev/null || true
-      - sha256sum *.vsix 2>/dev/null || sha256sum ./*.vsix 2>/dev/null || ls -la
-      - cd .. && sha256sum *.vsix 2>/dev/null || sha256sum ./*.vsix 2>/dev/null || true
+      - sha256sum *.vsix > sha256sum.txt
+      - cat sha256sum.txt
+    when:
+      - event: [tag]
 
   - name: changelog
     image: quay.io/thegeeklab/git-sv
@@ -52,7 +56,8 @@ steps:
       MARKETPLACE_TOKEN:
         from_secret: marketplace_token
     commands:
-      - npx vsce publish --no-dependency-updates --no-git-tag-version -p ${MARKETPLACE_TOKEN}
+      - npm version "${CI_COMMIT_TAG#v}" --no-git-tag-version
+      - npx vsce publish --no-dependencies --no-git-tag-version -p ${MARKETPLACE_TOKEN}
     when:
       - event: [tag]
 

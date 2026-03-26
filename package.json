@@ -2,7 +2,7 @@
   "name": "yamlfmt",
   "displayName": "yamlfmt",
   "description": "Format yaml files with https://github.com/google/yamlfmt",
-  "version": "0.1.6",
+  "version": "0.0.0-dev",
   "author": "Robert Kaussow <mail@thegeeklab.de> (https://github.com/xoxys)",
   "repository": {
     "type": "git",
