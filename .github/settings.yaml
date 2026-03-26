@@ -1,3 +1,4 @@
+---
 repository:
   name: vscode-extension-yamlfmt
   description: Format yaml files with yamlfmt for VS Code

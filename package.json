@@ -46,7 +46,12 @@
   ],
   "type": "module",
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onLanguage:yaml",
+    "onLanguage:github-actions-workflow",
+    "onLanguage:dockercompose",
+    "onLanguage:ansible",
+    "onLanguage:azure-pipelines"
   ],
   "main": "./dist/extension.js",
   "contributes": {
