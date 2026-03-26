@@ -12,6 +12,7 @@
     "url": "https://github.com/thegeeklab/vscode-extension-yamlfmt/issues"
   },
   "homepage": "https://github.com/thegeeklab/vscode-extension-yamlfmt#readme",
+  "icon": "icon.png",
   "private": true,
   "engines": {
     "vscode": "^1.110.0",

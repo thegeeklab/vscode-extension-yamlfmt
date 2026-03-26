@@ -42,6 +42,10 @@ Special thanks to all [contributors](https://github.com/thegeeklab/vscode-extens
 
 This project is a fork of [bluebrown/vscode-extension-yamlfmt](https://github.com/bluebrown/vscode-extension-yamlfmt) from Nico Braun. Thanks for your work.
 
+## AI Disclaimer
+
+Artificial Intelligence (AI) tools are utilized in the development of this project. This includes AI assistance for writing and reviewing code, as well as generating the extension's icon. All AI-generated contributions are carefully reviewed and tested by human maintainers.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/thegeeklab/vscode-extension-yamlfmt/blob/main/LICENSE) file for details.

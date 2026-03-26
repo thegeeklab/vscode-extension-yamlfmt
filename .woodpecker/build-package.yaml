@@ -52,7 +52,7 @@ steps:
       OVSX_TOKEN:
         from_secret: ovsx_token
     commands:
-      - npx ovsx publish --no-dependencies -p ${OVSX_TOKEN} *.vsix
+      - npx ovsx publish --no-dependencies --packagePath *.vsix -p $${OVSX_TOKEN}
     when:
       - event: [tag]
 
