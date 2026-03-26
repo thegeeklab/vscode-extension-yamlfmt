@@ -16,7 +16,7 @@ steps:
         else
           npm version "0.0.0-${CI_COMMIT_SHA:0:8}" --no-git-tag-version
         fi
-      - npm run vscode:prepublish
+      - npm run build:prod
       - npx vsce package --no-dependencies --no-git-tag-version && node scripts/make-vsix-executable.js
 
   - name: checksum
