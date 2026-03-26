@@ -15,6 +15,10 @@ repository:
   allow_squash_merge: true
   allow_merge_commit: true
   allow_rebase_merge: true
+  delete_branch_on_merge: true
+
+  enable_automated_security_fixes: false
+  enable_vulnerability_alerts: true
 
 labels:
   - name: bug
@@ -53,8 +57,8 @@ branches:
         strict: false
         contexts:
           - ci/woodpecker/pr/static
+          - ci/woodpecker/pr/test
           - ci/woodpecker/pr/build-package
-          - ci/woodpecker/pr/docs
       enforce_admins: false
       required_linear_history: true
       restrictions: null
