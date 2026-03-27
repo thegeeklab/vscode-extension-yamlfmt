@@ -25,7 +25,8 @@
       "supported": "limited",
       "description": "Only the user defined `yamlfmt` executable will be taken into account when running in untrusted mode.",
       "restrictedConfigurations": [
-        "yamlfmt.path"
+        "yamlfmt.path",
+        "yamlfmt.autoInstall"
       ]
     },
     "virtualWorkspaces": {
@@ -69,6 +70,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "yamlfmt.autoInstall": {
+          "scope": "machine",
+          "description": "Automatically download and install yamlfmt from GitHub releases if it is not found in the system PATH or at the configured path.",
+          "type": "boolean",
+          "default": false
         }
       }
     }
@@ -85,8 +92,8 @@
     "build:all:watch": "run-p check-types:watch build:watch build:test:watch",
     "vscode:prepublish": "npm run build:prod",
     "package:local": "npm run vscode:prepublish && npx vsce package --no-dependencies --no-git-tag-version",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "lint": "eslint src test",
+    "lint:fix": "eslint src test --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "spell": "cspell \"**\"",
