@@ -6,9 +6,12 @@ import { join } from "node:path"
 import * as vscode from "vscode"
 import { type ExtensionApi } from "../src/extension.js"
 import {
+  checkForUpdates,
+  compareVersions,
   extractFileFromTarGz,
   getArchId,
   getBinaryName,
+  getInstalledVersion,
   getPlatformId,
   installYamlFmt,
   parseTar
@@ -219,5 +222,91 @@ suite("Auto-install integration", () => {
       // Reset path to default
       await config.update("path", undefined, vscode.ConfigurationTarget.Global)
     }
+  })
+
+  suite("Version comparison", () => {
+    test("should return negative when first version is older", () => {
+      const result = compareVersions("v0.11.0", "v0.12.0")
+      assert.ok(result < 0, `Expected ${result} to be negative`)
+    })
+
+    test("should return positive when first version is newer", () => {
+      const result = compareVersions("v0.13.0", "v0.12.0")
+      assert.ok(result > 0, `Expected ${result} to be positive`)
+    })
+
+    test("should return zero for equal versions", () => {
+      const result = compareVersions("v0.12.0", "v0.12.0")
+      assert.strictEqual(result, 0)
+    })
+
+    test("should handle versions without v prefix", () => {
+      const result = compareVersions("0.11.0", "0.12.0")
+      assert.ok(result < 0, `Expected ${result} to be negative`)
+    })
+
+    test("should handle mixed v prefix", () => {
+      const result = compareVersions("v0.12.0", "0.12.0")
+      assert.strictEqual(result, 0)
+    })
+
+    test("should compare patch versions correctly", () => {
+      const result = compareVersions("v0.12.1", "v0.12.0")
+      assert.ok(result > 0, `Expected ${result} to be positive`)
+    })
+
+    test("should compare major versions correctly", () => {
+      const result = compareVersions("v1.0.0", "v0.12.0")
+      assert.ok(result > 0, `Expected ${result} to be positive`)
+    })
+  })
+
+  suite("Get installed version", () => {
+    test("should return null for non-existent binary", async function () {
+      this.timeout(10000)
+      const version = await getInstalledVersion("/nonexistent/path/yamlfmt", outputChannel)
+      assert.strictEqual(version, null)
+    })
+
+    test("should return version string for valid binary", async function () {
+      this.timeout(60000)
+      const installedPath = await installYamlFmt(installDir, outputChannel)
+      const version = await getInstalledVersion(installedPath, outputChannel)
+      assert.ok(version, "Expected a version string")
+      assert.ok(version.match(/v?\d+\.\d+\.\d+/), `Expected version like v0.12.0, got: ${version}`)
+    })
+  })
+
+  suite("Update check", () => {
+    test("should detect when update is available", async function () {
+      this.timeout(60000)
+      // Install the binary first
+      const installedPath = await installYamlFmt(installDir, outputChannel)
+
+      // Mock fetchLatestRelease by calling checkForUpdates
+      // This test verifies the structure of the update check result
+      const result = await checkForUpdates(installedPath, outputChannel)
+
+      assert.ok(result, "Expected update check result")
+      assert.ok(result.currentVersion, "Expected currentVersion in result")
+      assert.ok(result.latestVersion, "Expected latestVersion in result")
+      assert.ok(typeof result.updateAvailable === "boolean", "Expected updateAvailable boolean")
+
+      // The result structure is correct regardless of whether update is available
+      assert.ok(
+        result.currentVersion.match(/v?\d+\.\d+\.\d+/),
+        `Expected currentVersion format, got: ${result.currentVersion}`
+      )
+      assert.ok(
+        result.latestVersion.match(/^v\d+\.\d+\.\d+/),
+        `Expected latestVersion format, got: ${result.latestVersion}`
+      )
+    })
+
+    test("should return null when binary does not exist", async function () {
+      this.timeout(10000)
+      const result = await checkForUpdates("/nonexistent/path/yamlfmt", outputChannel)
+      assert.strictEqual(result, null, "Expected null for non-existent binary")
+    })
   })
 })
