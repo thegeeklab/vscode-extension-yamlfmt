@@ -184,6 +184,7 @@ export function buildTar(name: string, data: Buffer): Buffer {
   header[156] = 0x30
 
   // UStar magic (offset 257)
+  //cspell:words ustar
   header.write("ustar\0", 257, "utf8")
   header.write("00", 263, "utf8")
 
