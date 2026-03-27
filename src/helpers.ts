@@ -406,9 +406,9 @@ export async function getInstalledVersion(
     proc.on("close", () => {
       if (settled) return
       settled = true
-      // Try to parse version from output (format: "yamlfmt version 0.12.1" or similar)
+      // Try to parse version from output (format: "yamlfmt v0.12.1" or "yamlfmt version 0.12.1")
       const versionMatch =
-        stdout.match(/version\s+(v?[\d.]+)/) || stderr.match(/version\s+(v?[\d.]+)/)
+        stdout.match(/(?:version\s+)?v?([\d.]+)/i) || stderr.match(/(?:version\s+)?v?([\d.]+)/i)
       if (versionMatch) {
         const version = versionMatch[1].startsWith("v") ? versionMatch[1] : `v${versionMatch[1]}`
         outputChannel.debug(`  Installed version: ${version}`)
