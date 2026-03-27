@@ -137,7 +137,7 @@ class YamlFmtProvider
         if (nodeErr.code === "ENOENT") {
           reject(
             new Error(
-              `yamlfmt executable not found at '${yamlfmtPath}'. Please ensure it is installed and in your PATH, or configure 'yamlfmt.path', or enable 'yamlfmt.autoInstall'.`
+              `yamlfmt executable not found at '${yamlfmtPath}'. Please ensure it is installed and in your PATH, configure 'yamlfmt.path', or enable 'yamlfmt.autoInstall'.`
             )
           )
         } else {
