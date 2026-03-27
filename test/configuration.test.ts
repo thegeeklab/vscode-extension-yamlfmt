@@ -63,4 +63,27 @@ suite("Configuration", () => {
     assert.ok(inspect)
     assert.deepStrictEqual(inspect.defaultValue, [])
   })
+
+  test("should have default yamlfmt.autoInstall of false", () => {
+    const config = vscode.workspace.getConfiguration("yamlfmt")
+    const autoInstall = config.get<boolean>("autoInstall")
+
+    assert.strictEqual(autoInstall, false)
+  })
+
+  test("should allow enabling yamlfmt.autoInstall", async () => {
+    const config = vscode.workspace.getConfiguration("yamlfmt")
+    await config.update("autoInstall", true, vscode.ConfigurationTarget.Global)
+
+    const updatedConfig = vscode.workspace.getConfiguration("yamlfmt")
+    assert.strictEqual(updatedConfig.get<boolean>("autoInstall"), true)
+  })
+
+  test("should have machine scope for autoInstall", () => {
+    const config = vscode.workspace.getConfiguration("yamlfmt")
+    const inspect = config.inspect<boolean>("autoInstall")
+
+    assert.ok(inspect)
+    assert.strictEqual(inspect.defaultValue, false)
+  })
 })

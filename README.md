@@ -29,12 +29,28 @@ You can pass [extra flags](https://github.com/google/yamlfmt/blob/main/docs/comm
 ```json
 {
   "yamlfmt.path": "yamlfmt",
-  "yamlfmt.args": []
+  "yamlfmt.args": [],
+  "yamlfmt.autoInstall": false
 }
 ```
 
 > **Note** The flag `-in` is always appended to the args, since the current
 > document is passed via stdin to yamlfmt.
+
+### Auto-install
+
+When `yamlfmt.autoInstall` is set to `true`, the extension will automatically download and install
+the latest `yamlfmt` binary from [GitHub releases](https://github.com/google/yamlfmt/releases) if
+it is not found in the system PATH or at the configured `yamlfmt.path`.
+
+The binary is stored in the extension's global storage directory and reused on subsequent
+activations. The following platforms and architectures are supported:
+
+| OS      | Architectures             |
+| ------- | ------------------------- |
+| macOS   | `arm64`, `x86_64`         |
+| Linux   | `arm64`, `x86_64`, `i386` |
+| Windows | `arm64`, `x86_64`, `i386` |
 
 ## Contributors
 

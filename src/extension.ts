@@ -1,6 +1,7 @@
 import * as vscode from "vscode"
 import { spawn } from "node:child_process"
-import { dirname } from "node:path"
+import { dirname, join } from "node:path"
+import { DEFAULT_YAMLFMT_PATH, resolveYamlFmtPath } from "./helpers.js"
 
 const yamlformattedLanguages = [
   "yaml",
@@ -15,6 +16,8 @@ export let outputChannel: vscode.LogOutputChannel
 class YamlFmtProvider
   implements vscode.DocumentFormattingEditProvider, vscode.DocumentRangeFormattingEditProvider
 {
+  constructor(private readonly installDir: string) {}
+
   async provideDocumentFormattingEdits(
     document: vscode.TextDocument,
     _options: vscode.FormattingOptions,
@@ -40,7 +43,8 @@ class YamlFmtProvider
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri)
     const config = vscode.workspace.getConfiguration("", document.uri)
 
-    const yamlfmtPath = config.get<string>("yamlfmt.path", "yamlfmt")
+    const configuredPath = config.get<string>("yamlfmt.path", DEFAULT_YAMLFMT_PATH)
+    const autoInstall = config.get<boolean>("yamlfmt.autoInstall", false)
 
     const args = config.get<string[]>("yamlfmt.args", []).filter((arg) => arg !== "-in")
     args.push("-in")
@@ -48,9 +52,27 @@ class YamlFmtProvider
     const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : dirname(document.uri.fsPath)
 
     outputChannel.info(`Formatting document: ${document.uri.fsPath}`)
-    outputChannel.debug(`  yamlfmt path: ${yamlfmtPath}`)
+    outputChannel.debug(`  configured path: ${configuredPath}`)
+    outputChannel.debug(`  auto-install: ${autoInstall}`)
     outputChannel.debug(`  arguments: ${args.join(" ")}`)
     outputChannel.debug(`  working directory: ${cwd}`)
+
+    let yamlfmtPath: string
+    try {
+      yamlfmtPath = await resolveYamlFmtPath(
+        configuredPath,
+        autoInstall,
+        this.installDir,
+        outputChannel
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      outputChannel.error(`  Failed to resolve yamlfmt: ${message}`)
+      vscode.window.showErrorMessage(`yamlfmt: ${message}`)
+      return []
+    }
+
+    outputChannel.debug(`  resolved yamlfmt path: ${yamlfmtPath}`)
 
     // Get text for the full document or just the range
     const text = range ? document.getText(range) : document.getText()
@@ -115,7 +137,7 @@ class YamlFmtProvider
         if (nodeErr.code === "ENOENT") {
           reject(
             new Error(
-              `yamlfmt executable not found at '${yamlfmtPath}'. Please ensure it is installed and in your PATH, or configure 'yamlfmt.path'.`
+              `yamlfmt executable not found at '${yamlfmtPath}'. Please ensure it is installed and in your PATH, configure 'yamlfmt.path', or enable 'yamlfmt.autoInstall'.`
             )
           )
         } else {
@@ -154,6 +176,7 @@ class YamlFmtProvider
 
 export interface ExtensionApi {
   outputChannel: vscode.LogOutputChannel
+  installDir: string
 }
 
 export function activate(context: vscode.ExtensionContext): ExtensionApi {
@@ -163,7 +186,10 @@ export function activate(context: vscode.ExtensionContext): ExtensionApi {
   outputChannel.info("yamlfmt extension activated")
   outputChannel.info(`Supported languages: ${yamlformattedLanguages.join(", ")}`)
 
-  const provider = new YamlFmtProvider()
+  const installDir = join(context.globalStorageUri.fsPath, "bin")
+  outputChannel.debug(`  install directory: ${installDir}`)
+
+  const provider = new YamlFmtProvider(installDir)
 
   for (const lang of yamlformattedLanguages) {
     // Register both document and range formatting providers
@@ -175,7 +201,7 @@ export function activate(context: vscode.ExtensionContext): ExtensionApi {
     context.subscriptions.push(disposable, rangeDisposable)
   }
 
-  return { outputChannel }
+  return { outputChannel, installDir }
 }
 
 export function deactivate() {}
