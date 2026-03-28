@@ -1,7 +1,14 @@
 import * as vscode from "vscode"
 import { spawn } from "node:child_process"
 import { dirname, join } from "node:path"
-import { DEFAULT_YAMLFMT_PATH, resolveYamlFmtPath } from "./helpers.js"
+import {
+  DEFAULT_YAMLFMT_PATH,
+  checkForUpdates,
+  fileExists,
+  getBinaryName,
+  promptForUpdate,
+  resolveYamlFmtPath
+} from "./helpers.js"
 
 const yamlformattedLanguages = [
   "yaml",
@@ -199,6 +206,32 @@ export function activate(context: vscode.ExtensionContext): ExtensionApi {
       provider
     )
     context.subscriptions.push(disposable, rangeDisposable)
+  }
+
+  // Check for updates if auto-install is enabled and we have an installed binary
+  const config = vscode.workspace.getConfiguration("yamlfmt")
+  const autoInstall = config.get<boolean>("autoInstall", false)
+
+  if (autoInstall) {
+    const installedBinary = join(installDir, getBinaryName())
+
+    // Schedule update check after activation (non-blocking)
+    setTimeout(async () => {
+      if (await fileExists(installedBinary)) {
+        outputChannel.debug("  Checking for yamlfmt updates…")
+        const updateInfo = await checkForUpdates(installedBinary, outputChannel)
+
+        if (updateInfo?.updateAvailable) {
+          outputChannel.info(`  Update available: ${updateInfo.latestVersion}`)
+          await promptForUpdate(
+            updateInfo.currentVersion,
+            updateInfo.latestVersion,
+            installDir,
+            outputChannel
+          )
+        }
+      }
+    }, 2000) // Delay to not block extension activation
   }
 
   return { outputChannel, installDir }

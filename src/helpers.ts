@@ -368,3 +368,164 @@ export function parseTar(buffer: Buffer, targetName: string): Buffer | null {
 
   return null
 }
+
+/**
+ * Gets the version of an installed yamlfmt binary by running `--version`.
+ *
+ * @param yamlfmtPath The path to the yamlfmt binary.
+ * @param outputChannel The output channel for logging.
+ * @returns A promise that resolves to the version string (e.g., "v0.12.1") or `null` if the version could not be determined.
+ */
+export async function getInstalledVersion(
+  yamlfmtPath: string,
+  outputChannel: vscode.LogOutputChannel
+): Promise<string | null> {
+  return new Promise((resolve) => {
+    const proc = spawn(yamlfmtPath, ["--version"])
+    let stdout = ""
+    let stderr = ""
+    let settled = false
+
+    proc.stdout.on("data", (data: Buffer) => {
+      stdout += data.toString()
+    })
+
+    proc.stderr.on("data", (data: Buffer) => {
+      stderr += data.toString()
+    })
+
+    proc.on("error", () => {
+      if (settled) return
+      settled = true
+      outputChannel.debug(
+        `  Could not determine installed version: ${stderr || "binary not found"}`
+      )
+      resolve(null)
+    })
+
+    proc.on("close", () => {
+      if (settled) return
+      settled = true
+      // Try to parse version from output (format: "yamlfmt v0.12.1" or "yamlfmt version 0.12.1")
+      const versionMatch =
+        stdout.match(/(?:version\s+)?v?([\d.]+)/i) || stderr.match(/(?:version\s+)?v?([\d.]+)/i)
+      if (versionMatch) {
+        const version = versionMatch[1].startsWith("v") ? versionMatch[1] : `v${versionMatch[1]}`
+        outputChannel.debug(`  Installed version: ${version}`)
+        resolve(version)
+      } else {
+        outputChannel.debug(`  Could not parse version from output: ${stdout || stderr}`)
+        resolve(null)
+      }
+    })
+  })
+}
+
+/**
+ * Compares two version strings.
+ *
+ * @param a First version (e.g., "v0.12.0").
+ * @param b Second version (e.g., "v0.12.1").
+ * @returns A negative number if a < b, positive if a > b, 0 if equal.
+ */
+export function compareVersions(a: string, b: string): number {
+  const parse = (v: string) => v.replace(/^v/, "").split(".").map(Number)
+  const partsA = parse(a)
+  const partsB = parse(b)
+
+  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+    const numA = partsA[i] ?? 0
+    const numB = partsB[i] ?? 0
+    if (numA !== numB) {
+      return numA - numB
+    }
+  }
+  return 0
+}
+
+/**
+ * Checks if an update is available for the installed yamlfmt binary.
+ *
+ * @param yamlfmtPath The path to the installed yamlfmt binary.
+ * @param outputChannel The output channel for logging.
+ * @returns A promise that resolves to an object containing the current and latest versions, or `null` if no update check was performed.
+ */
+export async function checkForUpdates(
+  yamlfmtPath: string,
+  outputChannel: vscode.LogOutputChannel
+): Promise<{ currentVersion: string; latestVersion: string; updateAvailable: boolean } | null> {
+  // Get installed version
+  const currentVersion = await getInstalledVersion(yamlfmtPath, outputChannel)
+  if (!currentVersion) {
+    outputChannel.debug("  Could not determine installed version, skipping update check")
+    return null
+  }
+
+  // Get latest version from GitHub
+  let latestVersion: string
+  try {
+    const platform = getPlatformId()
+    const arch = getArchId()
+    latestVersion = (await fetchLatestRelease(platform, arch, outputChannel)).version
+  } catch (error) {
+    outputChannel.debug(`  Could not fetch latest version: ${error}`)
+    return null
+  }
+
+  const updateAvailable = compareVersions(currentVersion, latestVersion) < 0
+
+  outputChannel.info(
+    `  Update check: current=${currentVersion}, latest=${latestVersion}, updateAvailable=${updateAvailable}`
+  )
+
+  return { currentVersion, latestVersion, updateAvailable }
+}
+
+/**
+ * Prompts the user that an update is available with options to update or dismiss.
+ *
+ * @param currentVersion The currently installed version.
+ * @param latestVersion The latest available version.
+ * @param installDir The directory where the binary is installed.
+ * @param outputChannel The output channel for logging.
+ * @returns A promise that resolves to `true` if the user chose to update, `false` otherwise.
+ */
+export async function promptForUpdate(
+  currentVersion: string,
+  latestVersion: string,
+  installDir: string,
+  outputChannel: vscode.LogOutputChannel
+): Promise<boolean> {
+  const response = await vscode.window.showInformationMessage(
+    `A new yamlfmt version is available: ${latestVersion} (currently installed: ${currentVersion})`,
+    { modal: false },
+    "Update Now",
+    "Dismiss"
+  )
+
+  if (response === "Update Now") {
+    outputChannel.info("  User chose to update yamlfmt")
+    try {
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "yamlfmt: Updating…",
+          cancellable: false
+        },
+        async (progress) => {
+          progress.report({ message: "Downloading yamlfmt from GitHub releases…" })
+          await installYamlFmt(installDir, outputChannel)
+        }
+      )
+      vscode.window.showInformationMessage(`yamlfmt updated successfully to ${latestVersion}`)
+      return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      vscode.window.showErrorMessage(`Failed to update yamlfmt: ${message}`)
+      return false
+    }
+  }
+
+  outputChannel.debug("  User dismissed update notification")
+  return false
+}

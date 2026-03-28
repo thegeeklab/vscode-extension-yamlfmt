@@ -18,6 +18,7 @@ async function main() {
       version,
       extensionDevelopmentPath,
       extensionTestsPath,
+      extensionTestsEnv: { ...process.env, SHELL: "/bin/sh" },
       launchArgs: [
         "--new-window",
         "--disable-extensions",
