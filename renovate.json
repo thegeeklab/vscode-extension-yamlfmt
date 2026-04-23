@@ -1,4 +1,23 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>thegeeklab/renovate-presets:golang"]
+  "extends": ["github>thegeeklab/renovate-presets:golang"],
+  "customManagers": [
+    {
+      "description": "Update engines.vscode in sync with @types/vscode",
+      "customType": "regex",
+      "managerFilePatterns": ["package.json"],
+      "matchStrings": [
+        "\"engines\":\\s*\\{[\\s\\S]*?\"vscode\":\\s*\"\\^(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
+      ],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "@types/vscode"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Group @types/vscode and engines.vscode updates into one PR",
+      "matchPackageNames": ["@types/vscode"],
+      "groupName": "vscode engine and types"
+    }
+  ]
 }
