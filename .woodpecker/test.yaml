@@ -7,7 +7,7 @@ when:
 
 steps:
   - name: test
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     commands:
       - apt-get update > /dev/null 2>&1 && apt-get install -yq dbus dbus-x11 libasound2 libgbm1 libgtk-3-0 libnss3 xvfb wget jq > /dev/null 2>&1
       - eval $$(dbus-launch --sh-syntax)

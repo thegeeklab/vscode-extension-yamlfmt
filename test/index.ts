@@ -1,6 +1,6 @@
-import { Glob } from "glob"
 import Mocha from "mocha"
-import { resolve } from "node:path"
+import { glob } from "node:fs/promises"
+import { resolve as resolvePath } from "node:path"
 import { pathToFileURL } from "node:url"
 
 // @ts-expect-error internal mocha ESM utils
@@ -26,19 +26,21 @@ export async function run(): Promise<void> {
 
   const testsRoot = import.meta.dirname
 
-  for await (const file of new Glob("**/**.test.js", { cwd: testsRoot })) {
-    mocha.addFile(resolve(testsRoot, file))
+  for await (const file of glob("**/**.test.js", { cwd: testsRoot })) {
+    mocha.addFile(resolvePath(testsRoot, file))
   }
 
   await mocha.loadFilesAsync()
 
-  return new Promise((resolve, reject) => {
-    mocha.run((failures) => {
-      if (failures > 0) {
-        reject(new Error(`${failures} tests failed.`))
-      } else {
-        resolve()
-      }
-    })
+  const { promise, resolve, reject } = Promise.withResolvers<void>()
+
+  mocha.run((failures) => {
+    if (failures > 0) {
+      reject(new Error(`${failures} tests failed.`))
+    } else {
+      resolve()
+    }
   })
+
+  return promise
 }

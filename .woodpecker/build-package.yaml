@@ -7,7 +7,7 @@ when:
 
 steps:
   - name: build
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     commands:
       - npm ci
       - |
@@ -47,7 +47,7 @@ steps:
       - event: [tag]
 
   - name: publish-ovsx
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     environment:
       OVSX_TOKEN:
         from_secret: ovsx_token
@@ -57,7 +57,7 @@ steps:
       - event: [tag]
 
   - name: publish-marketplace
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     environment:
       MARKETPLACE_TOKEN:
         from_secret: marketplace_token

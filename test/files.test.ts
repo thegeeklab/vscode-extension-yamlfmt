@@ -1,13 +1,13 @@
-import { cpSync, mkdtempSync, readdirSync, rmSync, statSync } from "node:fs"
+import { cpSync, mkdtempSync, readdirSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { platform, tmpdir } from "node:os"
 import { caseDirTest, closeAllEditors } from "./helpers.js"
 
 suite("Config resolution (files)", () => {
   const casesDir = join(import.meta.dirname, "../../test/suite/testdata/files")
-  const testCases = readdirSync(casesDir).filter((entry) =>
-    statSync(join(casesDir, entry)).isDirectory()
-  )
+  const testCases = readdirSync(casesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
 
   // Copy test cases to a temp directory so that yamlfmt cannot walk up
   // the directory tree and discover the project root .yamlfmt.yaml.

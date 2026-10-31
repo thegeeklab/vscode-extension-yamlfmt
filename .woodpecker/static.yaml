@@ -7,7 +7,7 @@ when:
 
 steps:
   - name: deps
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     depends_on: []
     commands:
       - npm ci
@@ -40,19 +40,19 @@ steps:
         from_secret: github_token_ro
 
   - name: check-format
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     depends_on: [deps]
     commands:
       - npm run format:check
 
   - name: check-types
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     depends_on: [deps]
     commands:
       - npm run check-types
 
   - name: lint
-    image: docker.io/library/node:lts
+    image: docker.io/library/node:26
     depends_on: [deps]
     commands:
       - npm run lint

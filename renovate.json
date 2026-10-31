@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>thegeeklab/renovate-presets:golang"],
+  "extends": ["github>thegeeklab/renovate-presets"],
   "customManagers": [
     {
       "description": "Update engines.vscode in sync with @types/vscode",

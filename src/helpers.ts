@@ -208,21 +208,21 @@ export async function resolveYamlFmtPath(
  * @returns A promise that resolves to `true` if the binary is found and executable, `false` otherwise.
  */
 export function checkInPath(binaryName: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const proc = spawn(binaryName, ["--version"])
-    let hasError = false
-    proc.on("error", () => {
-      hasError = true
-      resolve(false)
-    })
-    proc.on("close", () => {
-      if (!hasError) {
-        // The binary was found and spawned successfully; the exit code of
-        // --version is irrelevant for the purposes of this check.
-        resolve(true)
-      }
-    })
+  const { promise, resolve } = Promise.withResolvers<boolean>()
+  const proc = spawn(binaryName, ["--version"])
+  let hasError = false
+  proc.on("error", () => {
+    hasError = true
+    resolve(false)
   })
+  proc.on("close", () => {
+    if (!hasError) {
+      // The binary was found and spawned successfully; the exit code of
+      // --version is irrelevant for the purposes of this check.
+      resolve(true)
+    }
+  })
+  return promise
 }
 
 /**
@@ -308,25 +308,26 @@ export async function httpsGet(url: string): Promise<{
  * @throws {Error} If the target file is not found in the archive.
  */
 export function extractFileFromTarGz(tarGzBuffer: Buffer, targetName: string): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const gunzip = createGunzip()
-    const chunks: Buffer[] = []
+  const { promise, resolve, reject } = Promise.withResolvers<Buffer>()
+  const gunzip = createGunzip()
+  const chunks: Buffer[] = []
 
-    gunzip.on("data", (chunk: Buffer) => chunks.push(chunk))
-    gunzip.on("error", reject)
-    gunzip.on("end", () => {
-      const tarBuffer = Buffer.concat(chunks)
-      const result = parseTar(tarBuffer, targetName)
-      if (result) {
-        resolve(result)
-      } else {
-        reject(new Error(`File '${targetName}' not found in archive`))
-      }
-    })
-
-    gunzip.write(tarGzBuffer)
-    gunzip.end()
+  gunzip.on("data", (chunk: Buffer) => chunks.push(chunk))
+  gunzip.on("error", reject)
+  gunzip.on("end", () => {
+    const tarBuffer = Buffer.concat(chunks)
+    const result = parseTar(tarBuffer, targetName)
+    if (result) {
+      resolve(result)
+    } else {
+      reject(new Error(`File '${targetName}' not found in archive`))
+    }
   })
+
+  gunzip.write(tarGzBuffer)
+  gunzip.end()
+
+  return promise
 }
 
 /**
@@ -380,45 +381,44 @@ export async function getInstalledVersion(
   yamlfmtPath: string,
   outputChannel: vscode.LogOutputChannel
 ): Promise<string | null> {
-  return new Promise((resolve) => {
-    const proc = spawn(yamlfmtPath, ["--version"])
-    let stdout = ""
-    let stderr = ""
-    let settled = false
+  const { promise, resolve } = Promise.withResolvers<string | null>()
+  const proc = spawn(yamlfmtPath, ["--version"])
+  let stdout = ""
+  let stderr = ""
+  let settled = false
 
-    proc.stdout.on("data", (data: Buffer) => {
-      stdout += data.toString()
-    })
-
-    proc.stderr.on("data", (data: Buffer) => {
-      stderr += data.toString()
-    })
-
-    proc.on("error", () => {
-      if (settled) return
-      settled = true
-      outputChannel.debug(
-        `  Could not determine installed version: ${stderr || "binary not found"}`
-      )
-      resolve(null)
-    })
-
-    proc.on("close", () => {
-      if (settled) return
-      settled = true
-      // Try to parse version from output (format: "yamlfmt v0.12.1" or "yamlfmt version 0.12.1")
-      const versionMatch =
-        stdout.match(/(?:version\s+)?v?([\d.]+)/i) || stderr.match(/(?:version\s+)?v?([\d.]+)/i)
-      if (versionMatch) {
-        const version = versionMatch[1].startsWith("v") ? versionMatch[1] : `v${versionMatch[1]}`
-        outputChannel.debug(`  Installed version: ${version}`)
-        resolve(version)
-      } else {
-        outputChannel.debug(`  Could not parse version from output: ${stdout || stderr}`)
-        resolve(null)
-      }
-    })
+  proc.stdout.on("data", (data: Buffer) => {
+    stdout += data.toString()
   })
+
+  proc.stderr.on("data", (data: Buffer) => {
+    stderr += data.toString()
+  })
+
+  proc.on("error", () => {
+    if (settled) return
+    settled = true
+    outputChannel.debug(`  Could not determine installed version: ${stderr || "binary not found"}`)
+    resolve(null)
+  })
+
+  proc.on("close", () => {
+    if (settled) return
+    settled = true
+    // Try to parse version from output (format: "yamlfmt v0.12.1" or "yamlfmt version 0.12.1")
+    const versionMatch =
+      stdout.match(/(?:version\s+)?v?([\d.]+)/i) || stderr.match(/(?:version\s+)?v?([\d.]+)/i)
+    if (versionMatch) {
+      const version = versionMatch[1].startsWith("v") ? versionMatch[1] : `v${versionMatch[1]}`
+      outputChannel.debug(`  Installed version: ${version}`)
+      resolve(version)
+    } else {
+      outputChannel.debug(`  Could not parse version from output: ${stdout || stderr}`)
+      resolve(null)
+    }
+  })
+
+  return promise
 }
 
 /**

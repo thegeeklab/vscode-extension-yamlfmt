@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2024",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "out",
@@ -13,8 +13,9 @@
 
     /* Project Setup & Build Options */
     "allowJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "mocha"]
   },
-  "include": ["src/**/*", "test/**/*", "eslint.config.mjs"],
+  "include": ["src/**/*", "test/**/*", "eslint.config.js"],
   "exclude": ["node_modules", "out", "dist"]
 }

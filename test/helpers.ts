@@ -1,12 +1,10 @@
 import assert from "node:assert"
 import { readFileSync } from "node:fs"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import { join } from "node:path"
 import { createGzip } from "node:zlib"
 import * as vscode from "vscode"
 
-const _filename = fileURLToPath(import.meta.url)
-const _dirname = dirname(_filename)
+const _dirname = import.meta.dirname
 const pkg = JSON.parse(readFileSync(join(_dirname, "..", "..", "package.json"), "utf-8"))
 
 /** Extension ID derived from package.json (`publisher.name`). */
@@ -57,21 +55,19 @@ export async function openDocument(
  * @throws {Error} If the timeout is reached before a change occurs.
  */
 export function waitForText(document: vscode.TextDocument, timeout = 10000): Promise<string> {
-  const event = new Promise<string>((resolve) => {
-    const disposable = vscode.workspace.onDidChangeTextDocument((e) => {
-      if (e.document.uri.toString() !== document.uri.toString()) {
-        return
-      }
-      disposable.dispose()
-      resolve(e.document.getText())
-    })
+  const { promise: event, resolve } = Promise.withResolvers<string>()
+  const disposable = vscode.workspace.onDidChangeTextDocument((e) => {
+    if (e.document.uri.toString() !== document.uri.toString()) {
+      return
+    }
+    disposable.dispose()
+    resolve(e.document.getText())
   })
 
-  const timer = new Promise<never>((_resolve, reject) =>
-    setTimeout(
-      () => reject(new Error(`Timed out after ${timeout}ms waiting for text change`)),
-      timeout
-    )
+  const { promise: timer, reject } = Promise.withResolvers<never>()
+  setTimeout(
+    () => reject(new Error(`Timed out after ${timeout}ms waiting for text change`)),
+    timeout
   )
 
   return Promise.race([event, timer])
@@ -113,8 +109,6 @@ export async function resetConfiguration(): Promise<void> {
  * @returns A promise that resolves when the test completes.
  */
 export async function caseDirTest(dirPath: string): Promise<void> {
-  const { readFileSync } = await import("node:fs")
-
   const inputUri = vscode.Uri.file(join(dirPath, "input.yaml"))
   const resultUri = vscode.Uri.file(join(dirPath, "result.yaml"))
 
@@ -215,13 +209,13 @@ export function buildTar(name: string, data: Buffer): Buffer {
  * @returns A promise that resolves to the gzipped buffer.
  */
 export function gzip(input: Buffer): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const gz = createGzip()
-    const chunks: Buffer[] = []
-    gz.on("data", (c: Buffer) => chunks.push(c))
-    gz.on("end", () => resolve(Buffer.concat(chunks)))
-    gz.on("error", reject)
-    gz.write(input)
-    gz.end()
-  })
+  const { promise, resolve, reject } = Promise.withResolvers<Buffer>()
+  const gz = createGzip()
+  const chunks: Buffer[] = []
+  gz.on("data", (c: Buffer) => chunks.push(c))
+  gz.on("end", () => resolve(Buffer.concat(chunks)))
+  gz.on("error", reject)
+  gz.write(input)
+  gz.end()
+  return promise
 }
