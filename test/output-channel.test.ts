@@ -1,6 +1,12 @@
 import assert from "node:assert"
 import * as vscode from "vscode"
-import { closeAllEditors, EXTENSION_ID, openDocument, resetConfiguration } from "./helpers.js"
+import {
+  closeAllEditors,
+  EXTENSION_ID,
+  openDocument,
+  resetConfiguration,
+  waitForText
+} from "./helpers.js"
 import type { ExtensionApi } from "../src/extension.js"
 
 suite("Output channel", () => {
@@ -30,14 +36,7 @@ suite("Output channel", () => {
 
     const document = await openDocument("name:    test\nkey:   value\n", "yaml")
 
-    const textChangePromise = new Promise<string>((resolve) => {
-      const disposable = vscode.workspace.onDidChangeTextDocument((e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          disposable.dispose()
-          resolve(e.document.getText())
-        }
-      })
-    })
+    const textChangePromise = waitForText(document)
 
     await vscode.commands.executeCommand("editor.action.formatDocument")
     const formatted = await textChangePromise

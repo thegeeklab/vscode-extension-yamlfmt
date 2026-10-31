@@ -123,58 +123,56 @@ class YamlFmtProvider
     token: vscode.CancellationToken,
     _filePath: string
   ): Promise<string> {
-    // Create a promise that can be rejected by cancellation
-    const processPromise = new Promise<string>((resolve, reject) => {
-      const proc = spawn(yamlfmtPath, args, { cwd })
+    const { promise: processPromise, resolve, reject } = Promise.withResolvers<string>()
+    const proc = spawn(yamlfmtPath, args, { cwd })
 
-      const stdoutChunks: Buffer[] = []
-      const stderrChunks: Buffer[] = []
+    const stdoutChunks: Buffer[] = []
+    const stderrChunks: Buffer[] = []
 
-      // Suppress EPIPE errors when the process exits before stdin is fully written
-      proc.stdin.on("error", () => {
-        // Intentionally empty - EPIPE errors are expected and harmless
-      })
+    // Suppress EPIPE errors when the process exits before stdin is fully written
+    proc.stdin.on("error", () => {
+      // Intentionally empty - EPIPE errors are expected and harmless
+    })
 
-      proc.stdout.on("data", (data: Buffer) => stdoutChunks.push(data))
-      proc.stderr.on("data", (data: Buffer) => stderrChunks.push(data))
+    proc.stdout.on("data", (data: Buffer) => stdoutChunks.push(data))
+    proc.stderr.on("data", (data: Buffer) => stderrChunks.push(data))
 
-      proc.on("error", (err) => {
-        // Handle common errors gracefully (e.g., yamlfmt not installed)
-        const nodeErr = err as NodeJS.ErrnoException
-        if (nodeErr.code === "ENOENT") {
-          reject(
-            new Error(
-              `yamlfmt executable not found at '${yamlfmtPath}'. Please ensure it is installed and in your PATH, configure 'yamlfmt.path', or enable 'yamlfmt.autoInstall'.`
-            )
+    proc.on("error", (err) => {
+      // Handle common errors gracefully (e.g., yamlfmt not installed)
+      const nodeErr = err as NodeJS.ErrnoException
+      if (nodeErr.code === "ENOENT") {
+        reject(
+          new Error(
+            `yamlfmt executable not found at '${yamlfmtPath}'. Please ensure it is installed and in your PATH, configure 'yamlfmt.path', or enable 'yamlfmt.autoInstall'.`
           )
-        } else {
-          reject(err)
-        }
-      })
+        )
+      } else {
+        reject(err)
+      }
+    })
 
-      proc.on("close", (code) => {
-        if (code !== 0) {
-          reject(
-            new Error(
-              Buffer.concat(stderrChunks).toString().trim() || `Process exited with code ${code}`
-            )
+    proc.on("close", (code) => {
+      if (code !== 0) {
+        reject(
+          new Error(
+            Buffer.concat(stderrChunks).toString().trim() || `Process exited with code ${code}`
           )
-        } else {
-          resolve(Buffer.concat(stdoutChunks).toString())
-        }
-      })
+        )
+      } else {
+        resolve(Buffer.concat(stdoutChunks).toString())
+      }
+    })
 
-      // Write the document text to stdin once the process has spawned
-      proc.on("spawn", () => {
-        proc.stdin.write(input)
-        proc.stdin.end()
-      })
+    // Write the document text to stdin once the process has spawned
+    proc.on("spawn", () => {
+      proc.stdin.write(input)
+      proc.stdin.end()
+    })
 
-      // Gracefully handle the user cancelling the format (e.g., closing the file before it finishes)
-      token.onCancellationRequested(() => {
-        proc.kill()
-        reject(new Error("Formatting cancelled"))
-      })
+    // Gracefully handle the user cancelling the format (e.g., closing the file before it finishes)
+    token.onCancellationRequested(() => {
+      proc.kill()
+      reject(new Error("Formatting cancelled"))
     })
 
     return processPromise
