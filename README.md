@@ -1,8 +1,7 @@
-# yamlfmt
+# vscode-extension-yamlfmt
 
 Format yaml files with [yamlfmt](https://github.com/google/yamlfmt) for VS Code.
 
-[![VS Code Version](https://img.shields.io/visual-studio-marketplace/v/bluebrown.yamlfmt?logo=visual-studio-code&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=bluebrown.yamlfmt)
 [![License: MIT](https://img.shields.io/github/license/thegeeklab/vscode-extension-yamlfmt?logo=github&logoColor=white)](https://github.com/thegeeklab/vscode-extension-yamlfmt/blob/main/LICENSE)
 
 A VS Code extension that formats yaml files using the external binary [yamlfmt](https://github.com/google/yamlfmt).
