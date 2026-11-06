@@ -1,5 +1,5 @@
 import { runTests } from "@vscode/test-electron"
-import { rmSync } from "node:fs"
+import { readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 
@@ -12,7 +12,13 @@ async function main() {
     // Clean up stale user data from previous test runs
     rmSync(userDataDir, { recursive: true, force: true })
 
-    const version = process.env.VSCODE_TEST_VERSION ?? "stable"
+    // Test against the VS Code version declared in package.json (@types/vscode),
+    // unless overridden via VSCODE_TEST_VERSION
+    const packageJson = JSON.parse(
+      readFileSync(resolve(extensionDevelopmentPath, "package.json"), "utf-8")
+    ) as { devDependencies: { "@types/vscode": string } }
+
+    const version = process.env.VSCODE_TEST_VERSION ?? packageJson.devDependencies["@types/vscode"]
 
     await runTests({
       version,
